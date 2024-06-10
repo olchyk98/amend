@@ -14,23 +14,29 @@ throwNotFound = (name, parent) ->
   throw new ModuleNotFound name, parent
 
 module.exports = class Container
+  # DONE
   constructor: (conf = {}, @_parents = []) ->
     @_modules = conf.modules || conf
     @_registrations = {}
     @_instances = {}
 
+  # DONE
   factory: (name, func) ->
     throw new Error 'A factory must be a function' unless func instanceof Function
     @_register 'factory', name, func
 
+  # DONE
   value: (name, value) -> @_register 'value', name, value
 
+  # DONE
   class: (name, constructor) ->
     throw new TypeError 'A constructor must be a function' unless constructor instanceof Function
     @_register 'class', name, constructor
 
+  # DONE
   spread: (obj) -> @value(k, v) for k, v of obj
 
+  # DONE
   get: (name) ->
     throwNotFound name unless @isRegistered name
     registeredAt = @_registeredAt(name)
@@ -40,8 +46,10 @@ module.exports = class Container
     else
       return @_parents[registeredAt].get(name)
 
+  # DONE
   _isInstantiated: (name) -> Object.keys(@_instances).indexOf(name) != -1
 
+  # DONE
   _registeredAt: (name) ->
     if @_registrations[name]?
       return 'local'
@@ -51,8 +59,10 @@ module.exports = class Container
           parentIndex = i
       return parentIndex
 
+  # DONE
   isRegistered: (name) -> @_registeredAt(name) != undefined
 
+  # DONE
   getRegistrations: ->
     if @_parents.length == 0
       return @_registrations
@@ -64,24 +74,29 @@ module.exports = class Container
       return acc
     , {}
 
+  # DONE
   getArguments: (name) ->
     if @_modules[name]?
       @_modules[name]
     else
       getArguments @_registrations[name].value
 
+  # DONE
   loadAll: ->
     p.loadAll() for p in @_parents
     Object.keys(@_registrations).forEach (name) =>
       @_instantiate name unless @_isInstantiated(name)
 
+  # DONE
   shutdown: ->
     Object.keys(@_instances).forEach (key) =>
       @_instances[key]?.__amendShutdown?()
     p.shutdown() for p in @_parents
 
+  # DONE
   _register: (type, name, value) -> @_registrations[name] = value: value, type: type
 
+  # DONE
   _instantiate: (name, parent) ->
     module = @_registrations[name]
     throwNotFound name, parent unless module?
@@ -91,6 +106,7 @@ module.exports = class Container
     @_instances[name] = instance
     return instance
 
+  # DONE
   _instantiateWithDependencies: (name, value, type) ->
     args = @getArguments name
 
